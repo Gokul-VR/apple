@@ -43,13 +43,24 @@ export default function HeroSequence() {
       const context = canvas.getContext("2d");
       if (!context) return;
 
-      const currentImages: HTMLImageElement[] = [];
-      let hitEnd = false;
       let currentIndexToCheck = 1;
+      const totalFrames = 80;
+      imagesRef.current = new Array(totalFrames);
 
       const render = (index: number) => {
-        if (!imagesRef.current[index]) return;
-        const img = imagesRef.current[index];
+        let img = imagesRef.current[index];
+        
+        // If the exact frame hasn't loaded yet due to fast scrubbing, fallback to the latest loaded frame
+        if (!img) {
+          for (let i = index - 1; i >= 0; i--) {
+            if (imagesRef.current[i]) {
+              img = imagesRef.current[i];
+              break;
+            }
+          }
+        }
+        
+        if (!img) return;
 
         const canvasRatio = canvas.width / canvas.height;
         const imgRatio = img.width / img.height;
@@ -74,16 +85,16 @@ export default function HeroSequence() {
       };
 
       const loadNext = () => {
-        if (hitEnd) return;
+        if (currentIndexToCheck > totalFrames) return;
+        
         const img = new window.Image();
         const paddedIndex = currentIndexToCheck.toString().padStart(3, "0");
         img.src = `/frames/ezgif-frame-${paddedIndex}.png`;
 
         img.onload = () => {
-          currentImages.push(img);
+          imagesRef.current[currentIndexToCheck - 1] = img;
 
           if (currentIndexToCheck === 1) {
-            imagesRef.current = currentImages;
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             render(0);
@@ -94,20 +105,15 @@ export default function HeroSequence() {
         };
 
         img.onerror = () => {
-          // Reached the end of the frames
-          hitEnd = true;
-          imagesRef.current = currentImages;
-          const finalCount = currentImages.length;
-
-          if (finalCount > 0) {
-            setupAnimation(finalCount);
-          }
+          currentIndexToCheck++;
+          loadNext(); // Try to load next even if one fails
         };
       };
 
-      // Start the sequential frame loading
+      // Start the sequential frame loading asynchronously
       loadNext();
 
+      // SETUP ANIMATION IMMEDIATELY using known frame count
       const setupAnimation = (finalFrameCount: number) => {
         const handleResize = () => {
           canvas.width = window.innerWidth;
@@ -160,7 +166,11 @@ export default function HeroSequence() {
         return () => window.removeEventListener("resize", handleResize);
       };
 
+      // Execute immediately!
+      const cleanupResize = setupAnimation(totalFrames);
+
       return () => {
+        cleanupResize();
         ScrollTrigger.getAll().forEach((st) => st.kill());
       };
     },
