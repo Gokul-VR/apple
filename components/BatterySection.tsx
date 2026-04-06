@@ -46,96 +46,104 @@ export default function BatterySection() {
 
   useGSAP(
     () => {
-      // Heading SplitText animation
-      if (headingRef.current) {
-        const headingSplit = SplitText.create(headingRef.current, {
-          type: "lines",
-          mask: "lines",
-          linesClass: "split-line",
-        });
-
-        gsap.fromTo(
-          headingSplit.lines,
-          { y: "100%" },
-          {
-            y: "0%",
-            stagger: 0.12,
-            duration: 1,
-            ease: "power3.out",
-            scrollTrigger: {
-              trigger: sectionRef.current,
-              start: "top 70%",
-              toggleActions: "play none none reverse",
+      const init = () => {
+        // Heading SplitText animation
+        if (headingRef.current) {
+          const headingSplit = SplitText.create(headingRef.current, {
+            type: "lines",
+            mask: "lines",
+            linesClass: "split-line",
+          });
+          gsap.fromTo(
+            headingSplit.lines,
+            { y: "100%" },
+            {
+              y: "0%",
+              stagger: 0.12,
+              duration: 1,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: sectionRef.current,
+                start: "top 70%",
+                toggleActions: "play none none reverse",
+              },
             },
-          },
-        );
+          );
+        }
+
+        if (paragraphRef.current) {
+          const paraSplit = SplitText.create(paragraphRef.current, {
+            type: "lines",
+            mask: "lines",
+            linesClass: "split-line",
+          });
+          gsap.fromTo(
+            paraSplit.lines,
+            { y: "100%" },
+            {
+              y: "0%",
+              stagger: 0.05,
+              duration: 0.8,
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: paragraphRef.current,
+                start: "top 85%",
+                toggleActions: "play none none reverse",
+              },
+            },
+          );
+        }
+
+        if (imageRef.current) {
+          gsap.fromTo(
+            imageRef.current,
+            { opacity: 0, scale: 0.95 },
+            {
+              opacity: 1,
+              scale: 1,
+              duration: 1.2,
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: imageRef.current,
+                start: "top 85%",
+                toggleActions: "play none none reverse",
+              },
+            },
+          );
+        }
+
+        if (statsRef.current) {
+          const statItems =
+            statsRef.current.querySelectorAll(".battery-stat-item");
+          gsap.fromTo(
+            statItems,
+            { opacity: 0, y: 40 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.7,
+              stagger: 0.15,
+              ease: "power3.out",
+              scrollTrigger: {
+                trigger: statsRef.current,
+                start: "top 88%",
+                toggleActions: "play none none reverse",
+              },
+            },
+          );
+        }
+      };
+
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+        init();
+      } else {
+        window.addEventListener("hero-sequence-ready", init, { once: true });
       }
 
-      // Paragraph fade in
-      if (paragraphRef.current) {
-        const paraSplit = SplitText.create(paragraphRef.current, {
-          type: "lines",
-          mask: "lines",
-          linesClass: "split-line",
-        });
-
-        gsap.fromTo(
-          paraSplit.lines,
-          { y: "100%" },
-          {
-            y: "0%",
-            stagger: 0.05,
-            duration: 0.8,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: paragraphRef.current,
-              start: "top 85%",
-              toggleActions: "play none none reverse",
-            },
-          },
-        );
-      }
-
-      // Image reveal
-      if (imageRef.current) {
-        gsap.fromTo(
-          imageRef.current,
-          { opacity: 0, scale: 0.95 },
-          {
-            opacity: 1,
-            scale: 1,
-            duration: 1.2,
-            ease: "power2.out",
-            scrollTrigger: {
-              trigger: imageRef.current,
-              start: "top 85%",
-              toggleActions: "play none none reverse",
-            },
-          },
-        );
-      }
-
-      // Stats stagger
-      if (statsRef.current) {
-        const statItems =
-          statsRef.current.querySelectorAll(".battery-stat-item");
-        gsap.fromTo(
-          statItems,
-          { opacity: 0, y: 40 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.7,
-            stagger: 0.15,
-            ease: "power3.out",
-            scrollTrigger: {
-              trigger: statsRef.current,
-              start: "top 88%",
-              toggleActions: "play none none reverse",
-            },
-          },
-        );
-      }
+      return () => {
+        window.removeEventListener("hero-sequence-ready", init);
+      };
     },
     { scope: sectionRef },
   );

@@ -14,44 +14,57 @@ export default function BentoGrid() {
 
   useGSAP(
     () => {
-      // Headline animation
-      if (headlineRef.current) {
+      const init = () => {
+        // Headline animation
+        if (headlineRef.current) {
+          gsap.fromTo(
+            headlineRef.current,
+            { opacity: 0, y: 30 },
+            {
+              opacity: 1,
+              y: 0,
+              duration: 0.8,
+              ease: "power2.out",
+              scrollTrigger: {
+                trigger: headlineRef.current,
+                start: "top 85%",
+                toggleActions: "play none none reverse",
+              },
+            },
+          );
+        }
+
+        // Cards stagger animation
+        const cards = gsap.utils.toArray<HTMLElement>(".bento-card");
         gsap.fromTo(
-          headlineRef.current,
-          { opacity: 0, y: 30 },
+          cards,
+          { opacity: 0, y: 60, scale: 0.96 },
           {
             opacity: 1,
             y: 0,
-            duration: 0.8,
-            ease: "power2.out",
+            scale: 1,
+            duration: 0.7,
+            stagger: 0.1,
+            ease: "power3.out",
             scrollTrigger: {
-              trigger: headlineRef.current,
-              start: "top 85%",
+              trigger: ".bento-grid",
+              start: "top 80%",
               toggleActions: "play none none reverse",
             },
           },
         );
+      };
+
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+        init();
+      } else {
+        window.addEventListener("hero-sequence-ready", init, { once: true });
       }
 
-      // Cards stagger animation
-      const cards = gsap.utils.toArray<HTMLElement>(".bento-card");
-      gsap.fromTo(
-        cards,
-        { opacity: 0, y: 60, scale: 0.96 },
-        {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          duration: 0.7,
-          stagger: 0.1,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: ".bento-grid",
-            start: "top 80%",
-            toggleActions: "play none none reverse",
-          },
-        },
-      );
+      return () => {
+        window.removeEventListener("hero-sequence-ready", init);
+      };
     },
     { scope: sectionRef },
   );
