@@ -49,7 +49,7 @@ export default function HeroSequence() {
 
       const render = (index: number) => {
         let img = imagesRef.current[index];
-        
+
         // If the exact frame hasn't loaded yet due to fast scrubbing, fallback to the latest loaded frame
         if (!img) {
           for (let i = index - 1; i >= 0; i--) {
@@ -59,7 +59,7 @@ export default function HeroSequence() {
             }
           }
         }
-        
+
         if (!img) return;
 
         const canvasRatio = canvas.width / canvas.height;
@@ -86,7 +86,7 @@ export default function HeroSequence() {
 
       const loadNext = () => {
         if (currentIndexToCheck > totalFrames) return;
-        
+
         const img = new window.Image();
         const paddedIndex = currentIndexToCheck.toString().padStart(3, "0");
         img.src = `/frames/ezgif-frame-${paddedIndex}.png`;
@@ -161,7 +161,10 @@ export default function HeroSequence() {
         // Crucial: Refresh ScrollTrigger so that subsequent sections (like UnibodySection)
         // are pushed down and recalculate their start/end positions based on this new pin spacer.
         ScrollTrigger.refresh();
-        window.dispatchEvent(new CustomEvent("hero-sequence-ready"));
+        // Defer so all other components finish mounting and attach their listeners first
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent("hero-sequence-ready"));
+        }, 0);
 
         return () => window.removeEventListener("resize", handleResize);
       };
